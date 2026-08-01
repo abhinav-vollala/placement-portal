@@ -9,6 +9,6 @@ export function DashboardRouter() {
     return <Navigate to="/login" replace />;
   }
 
-  const target = user.role === 'STUDENT' ? '/jobs' : user.role === 'RECRUITER' ? '/my-jobs' : '/admin';
+  const target = user.role === 'ADMIN' ? '/admin' : '/dashboard';
   return <Navigate to={target} replace />;
 }

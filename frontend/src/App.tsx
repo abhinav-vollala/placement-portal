@@ -8,7 +8,9 @@ import { LoginPage } from './pages/LoginPage';
 import { MyApplicationsPage } from './pages/MyApplicationsPage';
 import { RecruiterJobsPage } from './pages/RecruiterJobsPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { RoleDashboard } from './pages/RoleDashboard';
 import { StudentJobsPage } from './pages/StudentJobsPage';
+import { StudentProfilePage } from './pages/StudentProfilePage';
 
 // Route table. The layout route guards authentication; child routes that also
 // pass `allowedRoles` additionally guard by role.
@@ -26,6 +28,15 @@ export default function App() {
         }
       >
         <Route path="/" element={<DashboardRouter />} />
+        <Route path="/dashboard" element={<RoleDashboard />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowedRoles={['STUDENT']}>
+              <StudentProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/jobs"
           element={

@@ -1,12 +1,11 @@
+import { Briefcase, Plus } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { createJob, fetchMyJobs, type CreateJobInput, type Job } from '../api/jobs';
-import { StatusBadge } from '../components/StatusBadge';
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
+import { EmptyState } from '../components/ui/EmptyState';
+import { PageHeader } from '../components/ui/PageHeader';
+import { RecruiterJobCard } from '../components/ui/RecruiterJobCard';
+import { Spinner } from '../components/ui/Spinner';
 
 const emptyForm = {
   title: '',
@@ -55,7 +54,10 @@ export function RecruiterJobsPage() {
       minCgpa: form.minCgpa ? Number(form.minCgpa) : 0,
       maxBacklogs: form.maxBacklogs ? Number(form.maxBacklogs) : 0,
       allowedBranches: form.allowedBranches
-        ? form.allowedBranches.split(',').map((b) => b.trim()).filter(Boolean)
+        ? form.allowedBranches
+            .split(',')
+            .map((b) => b.trim())
+            .filter(Boolean)
         : [],
       deadline: new Date(form.deadline).toISOString(),
     };
@@ -75,100 +77,169 @@ export function RecruiterJobsPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  if (loading) return <p>Loading jobs…</p>;
+  if (loading) {
+    return <Spinner label="Loading your jobs…" />;
+  }
 
   return (
     <div>
-      <h1>My Jobs</h1>
-      {error && <p className="form-error">{error}</p>}
+      <PageHeader title="My Jobs" subtitle="Post new openings and manage existing ones." />
 
-      <form onSubmit={handleSubmit} className="job-form">
-        <h2>Post a new job</h2>
-        <div className="job-form-row">
-          <label>
-            Title
-            <input value={form.title} onChange={(e) => set('title', e.target.value)} required />
-          </label>
-          <label>
-            Role
-            <input value={form.role} onChange={(e) => set('role', e.target.value)} required />
-          </label>
-          <label>
-            CTC (LPA)
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={form.ctc}
-              onChange={(e) => set('ctc', e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Location
-            <input value={form.location} onChange={(e) => set('location', e.target.value)} required />
-          </label>
-        </div>
-        <div className="job-form-row">
-          <label>
-            Description
-            <textarea value={form.description} onChange={(e) => set('description', e.target.value)} required />
-          </label>
-          <label>
-            Min CGPA
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max="10"
-              value={form.minCgpa}
-              onChange={(e) => set('minCgpa', e.target.value)}
-            />
-          </label>
-          <label>
-            Max backlogs
-            <input
-              type="number"
-              min="0"
-              value={form.maxBacklogs}
-              onChange={(e) => set('maxBacklogs', e.target.value)}
-            />
-          </label>
-          <label>
-            Allowed branches (comma-separated)
-            <input
-              value={form.allowedBranches}
-              onChange={(e) => set('allowedBranches', e.target.value)}
-              placeholder="CSE, IT"
-            />
-          </label>
-          <label>
-            Deadline
-            <input type="date" value={form.deadline} onChange={(e) => set('deadline', e.target.value)} required />
-          </label>
-        </div>
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Posting…' : 'Post job'}
-        </button>
-      </form>
+      {error && <p className="form-error mb-6">{error}</p>}
 
-      <h2>Posted jobs</h2>
-      {jobs.length === 0 && <p>No jobs posted yet.</p>}
-      <div className="job-grid">
-        {jobs.map((job) => (
-          <div key={job.id} className="job-card">
-            <div className="job-card-header">
-              <h3>{job.title}</h3>
-              <StatusBadge status={job.status} />
+      {/* Post a new job */}
+      <div className="card mb-8 p-6">
+        <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-bold text-slate-900">
+          <Plus className="h-5 w-5 text-indigo-600" />
+          Post a new job
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label className="label" htmlFor="job-title">
+                Title
+              </label>
+              <input
+                id="job-title"
+                className="input"
+                value={form.title}
+                onChange={(e) => set('title', e.target.value)}
+                required
+                placeholder="Software Engineer Intern"
+              />
             </div>
-            <p>
-              {job.role} · {job.location} · ₹{job.ctc} LPA
-            </p>
-            <p>Apply by {formatDate(job.deadline)}</p>
-            <Link to={`/jobs/${job.id}/applicants`}>View applicants</Link>
+            <div>
+              <label className="label" htmlFor="job-role">
+                Role
+              </label>
+              <input
+                id="job-role"
+                className="input"
+                value={form.role}
+                onChange={(e) => set('role', e.target.value)}
+                required
+                placeholder="Intern / Fresher"
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="job-ctc">
+                CTC (LPA)
+              </label>
+              <input
+                id="job-ctc"
+                className="input"
+                type="number"
+                step="0.1"
+                min="0"
+                value={form.ctc}
+                onChange={(e) => set('ctc', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="job-location">
+                Location
+              </label>
+              <input
+                id="job-location"
+                className="input"
+                value={form.location}
+                onChange={(e) => set('location', e.target.value)}
+                required
+                placeholder="Bengaluru"
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="job-deadline">
+                Deadline
+              </label>
+              <input
+                id="job-deadline"
+                className="input"
+                type="date"
+                value={form.deadline}
+                onChange={(e) => set('deadline', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="job-mincgpa">
+                Min CGPA
+              </label>
+              <input
+                id="job-mincgpa"
+                className="input"
+                type="number"
+                step="0.01"
+                min="0"
+                max="10"
+                value={form.minCgpa}
+                onChange={(e) => set('minCgpa', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="job-backlogs">
+                Max backlogs
+              </label>
+              <input
+                id="job-backlogs"
+                className="input"
+                type="number"
+                min="0"
+                value={form.maxBacklogs}
+                onChange={(e) => set('maxBacklogs', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="job-branches">
+                Allowed branches
+              </label>
+              <input
+                id="job-branches"
+                className="input"
+                value={form.allowedBranches}
+                onChange={(e) => set('allowedBranches', e.target.value)}
+                placeholder="CSE, IT (blank = all)"
+              />
+            </div>
           </div>
-        ))}
+          <div>
+            <label className="label" htmlFor="job-description">
+              Description
+            </label>
+            <textarea
+              id="job-description"
+              className="input min-h-24"
+              value={form.description}
+              onChange={(e) => set('description', e.target.value)}
+              required
+              placeholder="Describe the role and responsibilities…"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              <Plus className="h-4 w-4" />
+              {submitting ? 'Posting…' : 'Post job'}
+            </button>
+          </div>
+        </form>
       </div>
+
+      {/* Posted jobs */}
+      <h2 className="mb-4 font-display text-xl font-bold text-slate-900">Posted jobs</h2>
+      {jobs.length === 0 ? (
+        <EmptyState
+          icon={Briefcase}
+          title="No jobs posted yet"
+          subtitle="Use the form above to post your first job."
+        />
+      ) : (
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {jobs.map((job) => (
+            <RecruiterJobCard key={job.id} job={job} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

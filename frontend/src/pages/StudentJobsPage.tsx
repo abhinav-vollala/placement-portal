@@ -1,11 +1,11 @@
+import { Briefcase } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { ApiError } from '../api/client';
 import { applyToJob, fetchJobs, type Job } from '../api/jobs';
-import { StatusBadge } from '../components/StatusBadge';
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
+import { EmptyState } from '../components/ui/EmptyState';
+import { JobCard } from '../components/ui/JobCard';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Spinner } from '../components/ui/Spinner';
 
 export function StudentJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -41,39 +41,35 @@ export function StudentJobsPage() {
     }
   }
 
-  if (loading) return <p>Loading jobs…</p>;
+  if (loading) {
+    return <Spinner label="Loading jobs…" />;
+  }
 
   return (
     <div>
-      <h1>Open Jobs</h1>
-      {error && <p className="form-error">{error}</p>}
-      {jobs.length === 0 && <p>No open jobs right now.</p>}
+      <PageHeader title="Browse Jobs" subtitle="Open opportunities across all companies." />
 
-      <div className="job-grid">
-        {jobs.map((job) => {
-          const applied = appliedTo.has(job.id);
-          return (
-            <div key={job.id} className="job-card">
-              <div className="job-card-header">
-                <h2>{job.title}</h2>
-                <StatusBadge status={job.status} />
-              </div>
-              <p className="job-company">{job.company?.name ?? 'Unknown company'}</p>
-              <p>
-                {job.role} · {job.location}
-              </p>
-              <p>CTC: ₹{job.ctc} LPA · Min CGPA: {job.minCgpa}</p>
-              <p>Apply by {formatDate(job.deadline)}</p>
-              <button
-                onClick={() => void handleApply(job)}
-                disabled={applied || applying === job.id}
-              >
-                {applied ? 'Applied ✓' : applying === job.id ? 'Applying…' : 'Apply'}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+      {error && <p className="form-error mb-6">{error}</p>}
+
+      {jobs.length === 0 ? (
+        <EmptyState
+          icon={Briefcase}
+          title="No open jobs right now"
+          subtitle="New opportunities will appear here as companies post them."
+        />
+      ) : (
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {jobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              applied={appliedTo.has(job.id)}
+              applying={applying === job.id}
+              onApply={() => void handleApply(job)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
