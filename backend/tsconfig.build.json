@@ -1,0 +1,5 @@
+// Build-only tsconfig: excludes test files so they never reach dist/.
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["src/**/*.test.ts", "src/test/**"]
+}

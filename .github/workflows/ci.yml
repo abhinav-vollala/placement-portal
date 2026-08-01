@@ -8,14 +8,28 @@ on:
 
 jobs:
   backend:
-    name: Backend · typecheck, lint, build
+    name: Backend · typecheck, lint, build, test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
     env:
-      # Only used by `prisma generate` (no real database is contacted).
+      # Only used by `prisma generate` (the tests point at the service DB).
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: placement
+          POSTGRES_PASSWORD: placement
+          POSTGRES_DB: placement_portal_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U placement -d placement_portal_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,9 +43,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
+      # Integration tests run against the Postgres service above.
+      - run: npm test
 
   frontend:
-    name: Frontend · typecheck, lint, build
+    name: Frontend · typecheck, lint, build, test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,6 +63,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
+      - run: npm test
 
   docker:
     name: Build Docker images
