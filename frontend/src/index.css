@@ -1,0 +1,313 @@
+/* Minimal global styles — no CSS framework, keeps this milestone focused.
+   The feature milestones add component-level styles. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #1a1a1a;
+  background: #f7f8fa;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Navigation bar */
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #1f2937;
+  color: #fff;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.navbar-links a {
+  color: #d1d5db;
+  text-decoration: none;
+  margin-right: 1rem;
+}
+
+.navbar-links a:hover {
+  color: #fff;
+}
+
+.navbar-user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.navbar-user button {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+
+/* Auth pages */
+.auth-page {
+  max-width: 400px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.auth-form input,
+.auth-form select {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.auth-form button {
+  padding: 0.6rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-error {
+  color: #b91c1c;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.form-success {
+  color: #15803d;
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+/* Job cards */
+.job-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.job-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.job-card h2,
+.job-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.job-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.job-company {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.job-card p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.job-card button {
+  margin-top: auto;
+  padding: 0.5rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.job-card button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-open,
+.badge-applied {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-closed,
+.badge-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-shortlisted {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.badge-selected {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* Stat cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-card strong {
+  font-size: 1.6rem;
+}
+
+.stat-card span {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+/* Data tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1rem 0 2rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f0f1f3;
+}
+
+.data-table th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+/* Job form (recruiter) */
+.job-form {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.job-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.job-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  flex: 1 1 200px;
+}
+
+.job-form input,
+.job-form textarea {
+  padding: 0.45rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.job-form button {
+  padding: 0.6rem 1.5rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Status control (recruiter applicants) */
+.status-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-control select {
+  padding: 0.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}

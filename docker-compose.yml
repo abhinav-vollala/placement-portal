@@ -1,0 +1,24 @@
+# Development environment.
+# Production setup (backend/frontend/nginx containers) arrives in Milestone 8.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: placement_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: placement
+      POSTGRES_PASSWORD: placement
+      POSTGRES_DB: placement_portal
+    ports:
+      - "5432:5432"
+    volumes:
+      - placement_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U placement -d placement_portal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  placement_db_data:

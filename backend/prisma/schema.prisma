@@ -1,0 +1,156 @@
+// Prisma schema for the College Placement Portal.
+// Uses the modern `prisma-client` generator (the old `prisma-client-js` is deprecated).
+// Generated client is emitted to src/generated/prisma (gitignored).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===============================================================
+// Enums
+// ===============================================================
+
+enum Role {
+  STUDENT
+  RECRUITER
+  ADMIN
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  SELECTED
+  REJECTED
+}
+
+// ===============================================================
+// Auth — one base account per person
+// ===============================================================
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  role         Role           @default(STUDENT)
+  student      Student?
+  recruiter    Recruiter?
+  announcements Announcement[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([role])
+}
+
+// ===============================================================
+// Profiles — role-specific data attached to a User
+// ===============================================================
+
+model Student {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  rollNo       String        @unique
+  branch       String
+  batch        Int
+  cgpa         Decimal       @db.Decimal(4, 2)
+  backlogs     Int           @default(0)
+  phone        String?
+  resumeUrl    String?
+  applications Application[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Recruiter {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  fullName  String
+  position  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+// ===============================================================
+// Recruiting — companies, jobs, and applications
+// ===============================================================
+
+model Company {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  industry    String?
+  website     String?
+  description String?
+  recruiters  Recruiter[]
+  jobs        Job[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Job {
+  id              String         @id @default(cuid())
+  companyId       String
+  company         Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title           String
+  role            String
+  ctc             Decimal        @db.Decimal(10, 2)
+  location        String
+  description     String
+  minCgpa         Decimal        @db.Decimal(3, 2) @default(0)
+  maxBacklogs     Int            @default(0)
+  allowedBranches String[]       @default([])
+  deadline        DateTime
+  status          JobStatus      @default(OPEN)
+  applications    Application[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model Application {
+  id        String            @id @default(cuid())
+  studentId String
+  student   Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status    ApplicationStatus @default(APPLIED)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([studentId, jobId])
+  @@index([jobId])
+}
+
+// ===============================================================
+// Communication
+// ===============================================================
+
+model Announcement {
+  id         String   @id @default(cuid())
+  title      String
+  body       String
+  postedById String
+  postedBy   User     @relation(fields: [postedById], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([postedById])
+}
