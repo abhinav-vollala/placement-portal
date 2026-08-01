@@ -74,7 +74,7 @@ async function main() {
   });
 
   // Acme recruiter connected to company
-  const bobRecruiter = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'bob@acme.com',
       passwordHash: await hashPassword('secret123'),
@@ -142,7 +142,7 @@ async function main() {
     },
   });
 
-  const janeRecruiter = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'jane@globex.com',
       passwordHash: await hashPassword('secret123'),
