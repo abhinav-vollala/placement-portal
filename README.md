@@ -1,6 +1,6 @@
 # College Placement Portal
 
-A placement portal where **students** apply to company job offers, **recruiters** post and manage jobs and review applicants, and **admins** oversee the entire flow. Built as a production-quality full-stack application: TypeScript end-to-end, PostgreSQL with type-safe migrations, Docker + Nginx deployment, and CI/CD.
+A placement portal where **students** apply to company job offers, **recruiters** post and manage jobs and review applicants, and **admins** oversee the entire flow. Built as a production-quality full-stack application: TypeScript end-to-end, PostgreSQL (Neon Cloud / Local) with type-safe migrations, role-based JWT authentication, and CI/CD.
 
 ## Features
 
@@ -9,7 +9,7 @@ A placement portal where **students** apply to company job offers, **recruiters*
 - **Recruiters** — post and manage jobs for their company, review applicants, move them through the pipeline (`APPLIED → SHORTLISTED → SELECTED/REJECTED`).
 - **Admins** — dashboard with live stats, student roster, and company overview.
 - **Eligibility engine** — server-enforced rules: minimum CGPA, maximum backlogs, allowed branches, open status, deadline.
-- **Production deployment** — Nginx reverse proxy serving the built app + proxying `/api`, one-command `docker compose` startup.
+- **Cloud Database** — 100% cloud-ready with Neon Serverless PostgreSQL (0 local software installation required).
 
 ## Tech Stack
 
@@ -17,22 +17,20 @@ A placement portal where **students** apply to company job offers, **recruiters*
 | --- | --- | --- |
 | Frontend | React + Vite + TypeScript | Componentized UI; Vite for fast dev/build; TS for compile-time safety |
 | Backend | Node.js + Express + TypeScript | One language across the stack; minimal, battle-tested framework |
-| Database | PostgreSQL | Relational data with strict integrity (unique apply, cascades) |
+| Database | PostgreSQL (Neon Cloud / Local) | Relational data with strict integrity (unique apply, cascades) |
 | ORM | Prisma | Schema-as-code + versioned migrations + generated types |
 | Validation | Zod | Runtime validation at the API boundary |
 | Auth | JWT + bcrypt | Stateless auth; hashed passwords |
-| Infra | Docker + Nginx | Reproducible environments; reverse proxy + static serving |
 | CI/CD | GitHub Actions | Lint, typecheck, build, and tests on every push |
 | Tests | Vitest + Supertest + Testing Library | Backend integration tests; frontend component tests |
 
 ## Architecture
 
 ```
-Browser ──▶ Nginx ──┬── static React build (production)
-                    └── /api/* ──▶ Express/Prisma ──▶ PostgreSQL
+Browser ──▶ React Frontend (:5173) ──▶ Express Backend (:4000) ──▶ PostgreSQL (Neon DB)
 ```
 
-In development, Vite's proxy plays Nginx's role (same `/api` path), so the frontend code is identical in both environments. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full write-up: data model, auth flow, request lifecycle, security notes, and design trade-offs.
+In development, Vite's proxy forwards `/api` requests to the Express backend (`:4000`), which communicates directly with your PostgreSQL database.
 
 ## Repository Structure
 
@@ -42,22 +40,19 @@ placement-portal/
 │   ├── prisma/              # schema.prisma, migrations, seed
 │   └── src/
 │       ├── config/          # validated environment configuration
-│       ├── lib/             # prisma, jwt, password, apiError
+│       ├── lib/             # prisma, jwt, password, apiError, uploads
 │       ├── middleware/      # authenticate, authorize, errorHandler
-│       ├── routes/          # auth, students, jobs, applications, admin
+│       ├── routes/          # auth, students, jobs, applications, admin, companies
 │       ├── services/        # eligibility rules (pure functions)
 │       └── test/            # integration tests + test utilities
 ├── frontend/                # React + Vite + TypeScript web app
 │   └── src/
 │       ├── api/             # typed API client per domain
 │       ├── auth/            # session context + route guards
-│       ├── components/      # shared UI (layout, badges)
-│       └── pages/           # dashboards and flows per role
-├── nginx/                   # production reverse-proxy config
-├── .github/workflows/       # CI pipeline
-├── docker-compose.yml       # development (Postgres only)
-├── docker-compose.prod.yml  # production stack
-└── docs/ARCHITECTURE.md     # architecture documentation
+│       ├── components/      # shared UI (layout, badges, cards)
+│       ├── pages/           # dashboards and flows per role
+│       └── theme/           # dark/light mode context
+└── .github/workflows/       # CI pipeline
 ```
 
 ## Getting Started
@@ -65,78 +60,70 @@ placement-portal/
 ### Prerequisites
 
 - **Node.js 20+** and **npm**
-- **PostgreSQL Database** — either:
-  - Free cloud PostgreSQL (e.g. [Neon.tech](https://neon.tech) / [Supabase](https://supabase.com)) — **no Docker needed!**
-  - Or local PostgreSQL / Docker Desktop (`docker compose up -d`)
+- **PostgreSQL Database URL** (e.g. Free [Neon.tech](https://neon.tech) / [Supabase](https://supabase.com))
+
+---
 
 ### Quick Start (Development)
 
+#### 1. Setup Backend
 ```bash
-# 1. Prepare the backend
 cd backend
-cp .env.example .env          # fill in your DATABASE_URL (e.g. Neon connection string)
+cp .env.example .env          # paste your Neon DATABASE_URL and JWT_SECRET
 npm install
 npm run db:migrate            # apply Prisma migrations
 npm run db:seed               # seed demo accounts & jobs
 npm run dev                   # API running on http://localhost:4000
+```
 
-# 2. In another terminal, start the frontend
-cd ../frontend
+#### 2. Setup Frontend
+In a new terminal:
+```bash
+cd frontend
 npm install
-npm run dev                   # web app running on http://localhost:5173
+npm run dev                   # Web app running on http://localhost:5173
 ```
 
-Open **http://localhost:5173** in your browser.
+Open **http://localhost:5173** in your browser!
 
-> 💡 *Optional:* If you prefer running PostgreSQL locally via Docker instead of a cloud database, run `docker compose up -d` before starting the backend.
+---
 
-### Production (Docker + Nginx)
-
-```bash
-# Set secrets in the environment or a root .env (JWT_SECRET, POSTGRES_USER, ...)
-docker compose -f docker-compose.prod.yml up -d --build
-# Open http://localhost:8080 — migrations apply automatically on start.
-```
-
-To seed demo data in production:
-
-```bash
-docker compose -f docker-compose.prod.yml exec backend npx tsx prisma/seed.ts
-```
-
-### Demo accounts (after `npm run db:seed`)
+### Demo Accounts (after `npm run db:seed`)
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Student | `alice@college.edu` | `secret123` |
-| Student (low CGPA) | `bob@college.edu` | `secret123` |
-| Recruiter | `bob@acme.com` | `secret123` |
-| Recruiter | `jane@globex.com` | `secret123` |
+| Student (CSE) | `alice@college.edu` | `secret123` |
+| Student (IT, low CGPA) | `bob@college.edu` | `secret123` |
+| Recruiter (Acme Corp) | `bob@acme.com` | `secret123` |
+| Recruiter (Globex Corp) | `jane@globex.com` | `secret123` |
 | Admin | `admin@portal.com` | `admin123` |
+
+---
 
 ## Testing
 
-```bash
-cd backend && npm test       # integration tests (needs the test DB, see below)
-cd frontend && npm test      # component tests
-```
-
-The backend suite runs against a **separate test database** so it never touches your seeded data. Create it once:
+Run unit and integration tests:
 
 ```bash
-docker compose exec db psql -U placement -d postgres \
-  -c "CREATE DATABASE placement_portal_test"
+# Backend tests
+cd backend
+npm test
+
+# Frontend tests
+cd ../frontend
+npm test
 ```
 
-The test runner applies migrations to it automatically before each run.
+---
 
 ## CI/CD
 
-`.github/workflows/ci.yml` runs on every push to `main` and every pull request. Three parallel jobs:
+`.github/workflows/ci.yml` runs on every push to `main` and every pull request:
 
-- **Backend** — install, generate Prisma client, typecheck, lint, build, integration tests (against an ephemeral Postgres service).
+- **Backend** — install, generate Prisma client, typecheck, lint, build, integration tests.
 - **Frontend** — install, typecheck, lint, build, component tests.
-- **Docker** — builds both production images to catch Dockerfile regressions.
+
+---
 
 ## API Overview
 
@@ -144,8 +131,8 @@ The test runner applies migrations to it automatically before each run.
 | --- | --- | --- | --- |
 | `POST` | `/api/auth/register` | public | Create a student or recruiter account |
 | `POST` | `/api/auth/login` | public | Authenticate, get a JWT |
-| `GET` | `/api/auth/me` | any auth | Current user |
-| `GET/PATCH` | `/api/students/me` | student | View / update own profile |
+| `GET` | `/api/auth/me` | any auth | Current user info |
+| `GET/PATCH` | `/api/students/me` | student | View / update own profile & photo |
 | `GET` | `/api/jobs` | any auth | Browse jobs (students see OPEN only) |
 | `POST` | `/api/jobs` | recruiter | Post a job |
 | `GET` | `/api/jobs/mine` | recruiter/admin | Own company's jobs |
@@ -155,17 +142,6 @@ The test runner applies migrations to it automatically before each run.
 | `GET` | `/api/applications/me` | student | Own applications |
 | `GET` | `/api/applications` | admin | All applications |
 | `PATCH` | `/api/applications/:id` | owner/admin | Update application status |
+| `GET/POST` | `/api/companies` | recruiter/admin | Company details & logo upload |
 | `GET` | `/api/admin/*` | admin | Stats, students, companies |
 
-## Milestones
-
-- [x] **M1** — Project scaffolding & backend toolchain
-- [x] **M2** — Database: PostgreSQL + Prisma schema
-- [x] **M3** — Backend foundation (Express app, config, error handling)
-- [x] **M4** — Authentication & authorization (JWT + roles)
-- [x] **M5** — Core APIs (students, jobs, applications)
-- [x] **M6** — Frontend foundation (routing, layout, auth pages)
-- [x] **M7** — Frontend features (dashboards, apply flows)
-- [x] **M8** — Docker + Nginx production setup
-- [x] **M9** — CI/CD with GitHub Actions
-- [x] **M10** — Hardening: tests & docs
