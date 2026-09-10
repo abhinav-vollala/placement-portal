@@ -64,30 +64,31 @@ placement-portal/
 
 ### Prerequisites
 
-- Node.js 20+ and npm
-- Docker Desktop (for Postgres and the production stack)
+- **Node.js 20+** and **npm**
+- **PostgreSQL Database** — either:
+  - Free cloud PostgreSQL (e.g. [Neon.tech](https://neon.tech) / [Supabase](https://supabase.com)) — **no Docker needed!**
+  - Or local PostgreSQL / Docker Desktop (`docker compose up -d`)
 
-### Development
+### Quick Start (Development)
 
 ```bash
-# 1. Start PostgreSQL
-docker compose up -d
-
-# 2. Prepare the backend
+# 1. Prepare the backend
 cd backend
-cp .env.example .env          # then edit .env (secret, database URL)
+cp .env.example .env          # fill in your DATABASE_URL (e.g. Neon connection string)
 npm install
 npm run db:migrate            # apply Prisma migrations
-npm run db:seed               # optional: demo data + admin account
-npm run dev                   # API on http://localhost:4000
+npm run db:seed               # seed demo accounts & jobs
+npm run dev                   # API running on http://localhost:4000
 
-# 3. In another terminal, start the frontend
+# 2. In another terminal, start the frontend
 cd ../frontend
 npm install
-npm run dev                   # web app on http://localhost:5173
+npm run dev                   # web app running on http://localhost:5173
 ```
 
-Open http://localhost:5173.
+Open **http://localhost:5173** in your browser.
+
+> 💡 *Optional:* If you prefer running PostgreSQL locally via Docker instead of a cloud database, run `docker compose up -d` before starting the backend.
 
 ### Production (Docker + Nginx)
 
