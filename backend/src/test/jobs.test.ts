@@ -165,6 +165,52 @@ describe('applicants & ownership', () => {
   });
 });
 
+describe('closing and reopening jobs', () => {
+  it('lets the owner close then reopen a job while the deadline is ahead (200)', async () => {
+    const recruiter = await makeRecruiter();
+    const job = await createJob(recruiter.token); // deadline 2030
+
+    const close = await request(app)
+      .patch(`/api/jobs/${job.id}`)
+      .set('Authorization', `Bearer ${recruiter.token}`)
+      .send({ status: 'CLOSED' });
+    expect(close.status).toBe(200);
+    expect(close.body.status).toBe('CLOSED');
+
+    const reopen = await request(app)
+      .patch(`/api/jobs/${job.id}`)
+      .set('Authorization', `Bearer ${recruiter.token}`)
+      .send({ status: 'OPEN' });
+    expect(reopen.status).toBe(200);
+    expect(reopen.body.status).toBe('OPEN');
+  });
+
+  it('refuses to reopen a job after its deadline has passed (400)', async () => {
+    const recruiter = await makeRecruiter();
+    const job = await createJob(recruiter.token, { deadline: new Date('2020-01-01').toISOString() });
+
+    const res = await request(app)
+      .patch(`/api/jobs/${job.id}`)
+      .set('Authorization', `Bearer ${recruiter.token}`)
+      .send({ status: 'OPEN' });
+    expect(res.status).toBe(400);
+  });
+
+  it('does not reset other fields when only the status is patched', async () => {
+    const recruiter = await makeRecruiter();
+    const job = await createJob(recruiter.token, { minCgpa: 7.5, workMode: 'HYBRID' });
+
+    const res = await request(app)
+      .patch(`/api/jobs/${job.id}`)
+      .set('Authorization', `Bearer ${recruiter.token}`)
+      .send({ status: 'CLOSED' });
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('CLOSED');
+    expect(res.body.minCgpa).toBe('7.5');
+    expect(res.body.workMode).toBe('HYBRID');
+  });
+});
+
 describe('application status updates', () => {
   it('lets the owning recruiter move an application (200)', async () => {
     const recruiter = await makeRecruiter();

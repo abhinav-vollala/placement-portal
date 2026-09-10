@@ -54,7 +54,7 @@ export function AdminPage() {
       )}
 
       <section className="mt-10">
-        <h2 className="mb-4 font-display text-xl font-bold text-slate-900">Students</h2>
+        <h2 className="mb-4 font-display text-xl font-bold text-slate-900 dark:text-white">Students</h2>
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="data-table">
@@ -70,13 +70,13 @@ export function AdminPage() {
               </thead>
               <tbody>
                 {students.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50">
-                    <td className="font-medium text-slate-900">{s.name}</td>
+                  <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-[#1a202c]">
+                    <td className="font-medium text-slate-900 dark:text-white">{s.name}</td>
                     <td>{s.rollNo}</td>
                     <td>{s.branch}</td>
                     <td>{s.batch}</td>
                     <td>{s.cgpa}</td>
-                    <td className="text-slate-500">{s.user?.email ?? '—'}</td>
+                    <td className="text-slate-500 dark:text-slate-400">{s.user?.email ?? '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -86,7 +86,7 @@ export function AdminPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-4 font-display text-xl font-bold text-slate-900">Companies</h2>
+        <h2 className="mb-4 font-display text-xl font-bold text-slate-900 dark:text-white">Companies</h2>
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="data-table">
@@ -99,8 +99,8 @@ export function AdminPage() {
               </thead>
               <tbody>
                 {companies.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50">
-                    <td className="font-medium text-slate-900">{c.name}</td>
+                  <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#1a202c]">
+                    <td className="font-medium text-slate-900 dark:text-white">{c.name}</td>
                     <td>{c.industry ?? '—'}</td>
                     <td>{c.jobs?.length ?? 0}</td>
                   </tr>

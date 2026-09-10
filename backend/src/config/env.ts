@@ -11,6 +11,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   JWT_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: z.string().default('7d'),
+  // Directory that stores uploaded files (student profile photos), relative to
+  // the backend working directory unless set to an absolute path.
+  UPLOAD_DIR: z.string().min(1).default('uploads'),
 });
 
 const parsed = envSchema.safeParse(process.env);

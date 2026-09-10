@@ -5,7 +5,14 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'bin/**',
+      'build/**',
+      'test-avatar.js',
+      'test-theme.js',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

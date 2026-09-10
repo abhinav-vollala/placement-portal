@@ -31,5 +31,15 @@ export function checkEligibility(student: Student, job: Job): EligibilityResult 
     reasons.push(`Only branches ${job.allowedBranches.join(', ')} are eligible`);
   }
 
+  // eligibleBatch is a comma-separated string (e.g. "2026, 2027").
+  // Split into individual values and trim whitespace before comparing so that
+  // "2026, 2027" and "2026,2027" are treated identically.
+  if (job.eligibleBatch) {
+    const allowedBatches = job.eligibleBatch.split(',').map((b) => b.trim());
+    if (!allowedBatches.includes(String(student.batch))) {
+      reasons.push(`Eligible batch: ${job.eligibleBatch}`);
+    }
+  }
+
   return { ok: reasons.length === 0, reasons };
 }

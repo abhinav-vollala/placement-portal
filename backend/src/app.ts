@@ -5,12 +5,17 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { adminRouter } from './routes/admin.js';
 import { applicationsRouter } from './routes/applications.js';
 import { authRouter } from './routes/auth.js';
+import { companiesRouter } from './routes/companies.js';
 import { healthRouter } from './routes/health.js';
 import { jobsRouter } from './routes/jobs.js';
 import { studentsRouter } from './routes/students.js';
+import { ensureUploadsDir, uploadsDir } from './lib/uploads.js';
 
 // Builds the Express app without binding to a port, so tests can use it too.
 export function createApp() {
+  // Create the upload directory before mounting the static handler below.
+  ensureUploadsDir();
+
   const app = express();
 
   // Parse incoming JSON request bodies.
@@ -19,10 +24,16 @@ export function createApp() {
   // Allow the frontend origin to call this API from the browser.
   app.use(cors({ origin: env.CLIENT_URL }));
 
+  // Serve uploaded files (student profile photos) as static assets. The
+  // frontend uses relative /uploads/... URLs, proxied in dev by Vite and in
+  // production by Nginx.
+  app.use('/uploads', express.static(uploadsDir));
+
   // Routes.
   app.use('/api/health', healthRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/students', studentsRouter);
+  app.use('/api/companies', companiesRouter);
   app.use('/api/jobs', jobsRouter);
   app.use('/api/applications', applicationsRouter);
   app.use('/api/admin', adminRouter);

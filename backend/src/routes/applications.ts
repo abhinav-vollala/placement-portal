@@ -62,3 +62,49 @@ applicationsRouter.patch('/:id', authenticate, requireRole('RECRUITER', 'ADMIN')
   });
   res.json(updated);
 });
+
+// GET /api/applications/:id — owning recruiter (or admin) sees a single
+// application with the full student profile and its job.
+applicationsRouter.get('/:id', authenticate, requireRole('RECRUITER', 'ADMIN'), async (req, res) => {
+  const application = await prisma.application.findUnique({
+    where: { id: String(req.params.id) },
+    include: {
+      student: {
+        select: {
+          id: true,
+          name: true,
+          rollNo: true,
+          branch: true,
+          batch: true,
+          cgpa: true,
+          backlogs: true,
+          phone: true,
+          resumeUrl: true,
+          linkedinUrl: true,
+          githubUrl: true,
+          photoUrl: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+      job: {
+        include: { company: { select: { id: true, name: true, logoUrl: true } } },
+      },
+    },
+  });
+  if (!application) {
+    throw new ApiError(404, 'Application not found');
+  }
+
+  if (req.user!.role !== 'ADMIN') {
+    const recruiter = await prisma.recruiter.findUnique({ where: { userId: req.user!.userId } });
+    if (!recruiter || recruiter.companyId !== application.job.companyId) {
+      throw new ApiError(403, 'You cannot view this application');
+    }
+  }
+
+  res.json(application);
+});

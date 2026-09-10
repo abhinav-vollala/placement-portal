@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, apiFormFetch } from './client';
 
 export interface StudentProfile {
   id: string;
@@ -11,6 +11,9 @@ export interface StudentProfile {
   backlogs: number;
   phone: string | null;
   resumeUrl: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  photoUrl: string | null;
   user?: { email: string };
   createdAt: string;
   updatedAt: string;
@@ -21,6 +24,10 @@ export interface UpdateStudentInput {
   name?: string;
   phone?: string;
   resumeUrl?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  branch?: string;
+  batch?: number;
   cgpa?: number;
   backlogs?: number;
 }
@@ -34,4 +41,17 @@ export function updateMyProfile(input: UpdateStudentInput): Promise<StudentProfi
     method: 'PATCH',
     body: JSON.stringify(input),
   });
+}
+
+// Upload (or replace) the profile photo. The server stores the file and returns
+// the updated profile with the new photoUrl.
+export function uploadMyPhoto(file: File): Promise<StudentProfile> {
+  const form = new FormData();
+  form.append('photo', file);
+  return apiFormFetch<StudentProfile>('/students/me/photo', form);
+}
+
+// Remove the profile photo and return the updated profile.
+export function removeMyPhoto(): Promise<StudentProfile> {
+  return apiFetch<StudentProfile>('/students/me/photo', { method: 'DELETE' });
 }

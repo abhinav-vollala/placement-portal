@@ -9,17 +9,30 @@ import type { AuthUser } from '../types/auth.js';
 
 export const jobsRouter = Router();
 
+// NOTE: no `.default()` here on purpose. Defaults are applied in the POST
+// handler so that PATCH (which uses `createJobSchema.partial()`) does not
+// silently reset omitted fields back to their defaults — e.g. a close/reopen
+// that only sends `{ status }` must not overwrite minCgpa or workMode.
 const createJobSchema = z.object({
   title: z.string().min(1),
   role: z.string().min(1),
   ctc: z.number().nonnegative(),
   location: z.string().min(1),
   description: z.string().min(1),
-  minCgpa: z.number().min(0).max(10).default(0),
-  maxBacklogs: z.number().int().min(0).default(0),
-  allowedBranches: z.array(z.string()).default([]),
+  minCgpa: z.number().min(0).max(10).optional(),
+  maxBacklogs: z.number().int().min(0).optional(),
+  allowedBranches: z.array(z.string()).optional(),
   deadline: z.coerce.date(),
   status: z.enum(['OPEN', 'CLOSED']).optional(),
+  employmentType: z.enum(['FULL_TIME', 'INTERNSHIP', 'PART_TIME']).optional(),
+  openings: z.number().int().positive().optional(),
+  eligibleBatch: z.string().optional(),
+  responsibilities: z.string().optional(),
+  requirements: z.string().optional(),
+  preferredSkills: z.string().optional(),
+  experience: z.string().optional(),
+  duration: z.string().optional(),
+  workMode: z.enum(['ONSITE', 'HYBRID', 'REMOTE']).optional(),
 });
 
 // Load a job and verify the caller is the owning recruiter's company (or admin).
@@ -43,7 +56,7 @@ async function loadOwnedJob(jobId: string, user: AuthUser) {
 jobsRouter.get('/', authenticate, async (req, res) => {
   const jobs = await prisma.job.findMany({
     where: req.user!.role === 'ADMIN' ? {} : { status: 'OPEN' },
-    include: { company: { select: { id: true, name: true, industry: true } } },
+    include: { company: { select: { id: true, name: true, industry: true, logoUrl: true } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(jobs);
@@ -57,7 +70,7 @@ jobsRouter.get('/mine', authenticate, requireRole('RECRUITER', 'ADMIN'), async (
   }
   const jobs = await prisma.job.findMany({
     where: recruiter ? { companyId: recruiter.companyId } : {},
-    include: { company: { select: { id: true, name: true } } },
+    include: { company: { select: { id: true, name: true, logoUrl: true } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(jobs);
@@ -71,7 +84,17 @@ jobsRouter.post('/', authenticate, requireRole('RECRUITER'), async (req, res) =>
     throw new ApiError(404, 'Recruiter profile not found');
   }
   const job = await prisma.job.create({
-    data: { ...data, companyId: recruiter.companyId },
+    data: {
+      ...data,
+      minCgpa: data.minCgpa ?? 0,
+      maxBacklogs: data.maxBacklogs ?? 0,
+      allowedBranches: data.allowedBranches ?? [],
+      status: data.status ?? 'OPEN',
+      employmentType: data.employmentType ?? 'FULL_TIME',
+      openings: data.openings ?? 1,
+      workMode: data.workMode ?? 'ONSITE',
+      companyId: recruiter.companyId,
+    },
   });
   res.status(201).json(job);
 });
@@ -81,7 +104,17 @@ jobsRouter.get('/:id', authenticate, async (req, res) => {
   const job = await prisma.job.findUnique({
     where: { id: String(req.params.id) },
     include: {
-      company: { select: { id: true, name: true, industry: true, website: true, description: true } },
+      company: {
+        select: {
+          id: true,
+          name: true,
+          industry: true,
+          website: true,
+          description: true,
+          logoUrl: true,
+          recruiters: { select: { id: true, fullName: true, position: true }, take: 1 },
+        },
+      },
     },
   });
   if (!job) {
@@ -96,8 +129,36 @@ jobsRouter.get('/:id/applications', authenticate, requireRole('RECRUITER', 'ADMI
   const applications = await prisma.application.findMany({
     where: { jobId: job.id },
     include: {
+      job: {
+        select: {
+          id: true,
+          title: true,
+          role: true,
+          companyId: true,
+          status: true,
+          deadline: true,
+        },
+      },
       student: {
-        select: { id: true, name: true, rollNo: true, branch: true, cgpa: true, backlogs: true, resumeUrl: true },
+        select: {
+          id: true,
+          name: true,
+          rollNo: true,
+          branch: true,
+          batch: true,
+          cgpa: true,
+          backlogs: true,
+          phone: true,
+          resumeUrl: true,
+          linkedinUrl: true,
+          githubUrl: true,
+          photoUrl: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
       },
     },
     orderBy: { createdAt: 'asc' },
@@ -139,6 +200,12 @@ jobsRouter.post('/:id/apply', authenticate, requireRole('STUDENT'), async (req, 
 jobsRouter.patch('/:id', authenticate, requireRole('RECRUITER', 'ADMIN'), async (req, res) => {
   const data = createJobSchema.partial().parse(req.body);
   const job = await loadOwnedJob(String(req.params.id), req.user!);
+
+  // Reopening is only allowed while the application window is still open.
+  if (data.status === 'OPEN' && new Date(job.deadline) < new Date()) {
+    throw new ApiError(400, 'Cannot reopen a job after its application deadline has passed');
+  }
+
   const updated = await prisma.job.update({ where: { id: job.id }, data });
   res.json(updated);
 });

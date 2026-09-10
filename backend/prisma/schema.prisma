@@ -35,6 +35,18 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum EmploymentType {
+  FULL_TIME
+  INTERNSHIP
+  PART_TIME
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
 // ===============================================================
 // Auth — one base account per person
 // ===============================================================
@@ -69,6 +81,9 @@ model Student {
   backlogs     Int           @default(0)
   phone        String?
   resumeUrl    String?
+  linkedinUrl  String?
+  githubUrl    String?
+  photoUrl     String?
   applications Application[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -98,6 +113,7 @@ model Company {
   industry    String?
   website     String?
   description String?
+  logoUrl     String?
   recruiters  Recruiter[]
   jobs        Job[]
   createdAt   DateTime    @default(now())
@@ -118,6 +134,15 @@ model Job {
   allowedBranches String[]       @default([])
   deadline        DateTime
   status          JobStatus      @default(OPEN)
+  employmentType  EmploymentType @default(FULL_TIME)
+  openings        Int            @default(1)
+  eligibleBatch   String?
+  responsibilities String?
+  requirements    String?
+  preferredSkills String?
+  experience      String?
+  duration        String?
+  workMode        WorkMode       @default(ONSITE)
   applications    Application[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

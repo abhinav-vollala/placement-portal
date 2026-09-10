@@ -2,11 +2,15 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { AdminPage } from './pages/AdminPage';
-import { ApplicantsPage } from './pages/ApplicantsPage';
+import { ApplicantDetailPage } from './pages/ApplicantDetailPage';
 import { DashboardRouter } from './pages/DashboardRouter';
+import { JobDetailsPage } from './pages/JobDetailsPage';
 import { LoginPage } from './pages/LoginPage';
 import { MyApplicationsPage } from './pages/MyApplicationsPage';
+import { RecruiterAllJobsPage } from './pages/RecruiterAllJobsPage';
+import { RecruiterApplicantsPage } from './pages/RecruiterApplicantsPage';
 import { RecruiterJobsPage } from './pages/RecruiterJobsPage';
+import { RecruiterShortlistedPage } from './pages/RecruiterShortlistedPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { RoleDashboard } from './pages/RoleDashboard';
 import { StudentJobsPage } from './pages/StudentJobsPage';
@@ -53,6 +57,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/my-jobs"
           element={
@@ -62,10 +67,50 @@ export default function App() {
           }
         />
         <Route
+          path="/my-jobs/all"
+          element={
+            <ProtectedRoute allowedRoles={['RECRUITER']}>
+              <RecruiterAllJobsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-jobs/applicants"
+          element={
+            <ProtectedRoute allowedRoles={['RECRUITER']}>
+              <RecruiterApplicantsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-jobs/applicants/:applicationId"
+          element={
+            <ProtectedRoute allowedRoles={['RECRUITER']}>
+              <ApplicantDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-jobs/shortlisted"
+          element={
+            <ProtectedRoute allowedRoles={['RECRUITER']}>
+              <RecruiterShortlistedPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/jobs/:id/applicants"
           element={
             <ProtectedRoute allowedRoles={['RECRUITER']}>
-              <ApplicantsPage />
+              <RecruiterApplicantsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jobs/:id"
+          element={
+            <ProtectedRoute>
+              <JobDetailsPage />
             </ProtectedRoute>
           }
         />

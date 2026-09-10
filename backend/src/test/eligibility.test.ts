@@ -94,4 +94,38 @@ describe('checkEligibility', () => {
     const result = checkEligibility(student, job);
     expect(result.reasons).toHaveLength(3);
   });
+
+  // ── Batch eligibility ────────────────────────────────────────────────────────
+
+  it('allows a student whose batch exactly matches the single eligibleBatch value', () => {
+    const job = makeJob({ eligibleBatch: '2026' });
+    const result = checkEligibility(makeStudent({ batch: 2026 }), job);
+    expect(result.ok).toBe(true);
+  });
+
+  it('allows a student whose batch is one of several comma-separated eligible batches', () => {
+    // This is the reported bug scenario: student.batch=2027, job.eligibleBatch="2026, 2027"
+    const job = makeJob({ eligibleBatch: '2026, 2027' });
+    const result = checkEligibility(makeStudent({ batch: 2027 }), job);
+    expect(result.ok).toBe(true);
+  });
+
+  it('blocks a student whose batch is not in the comma-separated eligible list', () => {
+    const job = makeJob({ eligibleBatch: '2026, 2027' });
+    const result = checkEligibility(makeStudent({ batch: 2025 }), job);
+    expect(result.ok).toBe(false);
+    expect(result.reasons).toContain('Eligible batch: 2026, 2027');
+  });
+
+  it('handles comma-separated batches without spaces the same way', () => {
+    const job = makeJob({ eligibleBatch: '2026,2027' });
+    const result = checkEligibility(makeStudent({ batch: 2027 }), job);
+    expect(result.ok).toBe(true);
+  });
+
+  it('treats a null eligibleBatch as no batch restriction', () => {
+    const job = makeJob({ eligibleBatch: null });
+    const result = checkEligibility(makeStudent({ batch: 2099 }), job);
+    expect(result.ok).toBe(true);
+  });
 });

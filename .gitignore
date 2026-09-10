@@ -8,6 +8,9 @@ build/
 # Prisma generated client
 backend/src/generated/
 
+# Runtime uploads (student profile photos)
+backend/uploads/
+
 # Environment variables (never commit secrets!)
 .env
 .env.local
@@ -28,4 +31,10 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/
+
+# Test screenshots and temporary test scripts
+frontend/test_*.png
+frontend/test-*.js
+frontend/login.png
+frontend/profile-avatar.png
 

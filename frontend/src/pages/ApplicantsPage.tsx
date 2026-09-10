@@ -1,10 +1,11 @@
-import { ExternalLink, FileText, Users } from 'lucide-react';
+import { ExternalLink, Users } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { updateApplicationStatus } from '../api/applications';
 import { ApiError } from '../api/client';
 import { fetchJobApplications, type Application, type ApplicationStatus } from '../api/jobs';
 import { StatusBadge } from '../components/StatusBadge';
+import { CvResumeIcon } from '../components/ui/BrandIcons';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Spinner } from '../components/ui/Spinner';
@@ -53,7 +54,7 @@ export function ApplicantsPage() {
   return (
     <div>
       <p className="mb-4">
-        <Link to="/my-jobs" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+        <Link to="/my-jobs" className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
           ← Back to my jobs
         </Link>
       </p>
@@ -87,35 +88,35 @@ export function ApplicantsPage() {
               </thead>
               <tbody>
                 {applications.map((app) => (
-                  <tr key={app.id} className="hover:bg-slate-50">
+                  <tr key={app.id} className="hover:bg-slate-50 dark:hover:bg-[#1a202c]">
                     <td>
-                      <p className="font-medium text-slate-900">{app.student?.name ?? '—'}</p>
-                      <p className="text-xs text-slate-500">{app.student?.rollNo}</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{app.student?.name ?? '—'}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{app.student?.rollNo}</p>
                     </td>
                     <td>{app.student?.branch ?? '—'}</td>
-                    <td className="font-medium text-slate-800">{app.student?.cgpa ?? '—'}</td>
+                    <td className="font-medium text-slate-800 dark:text-slate-200">{app.student?.cgpa ?? '—'}</td>
                     <td>
                       {app.student?.resumeUrl ? (
                         <a
                           href={app.student.resumeUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:border-emerald-800/60 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
                         >
-                          <FileText className="h-3.5 w-3.5" />
+                          <CvResumeIcon className="h-4 w-4" />
                           View
-                          <ExternalLink className="h-3 w-3" />
+                          <ExternalLink className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                         </a>
                       ) : (
-                        <span className="text-sm text-slate-400">No resume</span>
+                        <span className="text-sm text-slate-400 dark:text-slate-500">No resume</span>
                       )}
                     </td>
-                    <td className="text-slate-500">{formatDate(app.createdAt)}</td>
+                    <td className="text-slate-500 dark:text-slate-400">{formatDate(app.createdAt)}</td>
                     <td>
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusBadge status={app.status} />
                         <select
-                          className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                          className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-[#262e3d] dark:bg-[#1a202c] dark:text-white"
                           value={app.status}
                           disabled={updating === app.id}
                           onChange={(e) => void handleStatusChange(app.id, e.target.value as ApplicationStatus)}

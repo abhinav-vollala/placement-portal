@@ -16,6 +16,9 @@ interface JobInput {
   allowedBranches?: string[];
   deadline: string;
   status?: 'OPEN' | 'CLOSED';
+  employmentType?: 'FULL_TIME' | 'INTERNSHIP' | 'PART_TIME';
+  openings?: number;
+  workMode?: 'ONSITE' | 'HYBRID' | 'REMOTE';
 }
 
 const PASSWORD = 'password123';

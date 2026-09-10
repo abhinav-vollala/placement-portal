@@ -33,6 +33,11 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-placement}:${POSTGRES_PASSWORD:-placement}@db:5432/${POSTGRES_DB:-placement_portal}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production-use-a-long-random-string}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      # Where uploaded profile photos live; a named volume keeps them across
+      # container recreates.
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - backend_uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -51,3 +56,4 @@ services:
 
 volumes:
   placement_db_data:
+  backend_uploads:

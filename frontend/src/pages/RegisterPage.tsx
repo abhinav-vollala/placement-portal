@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { RegisterInput } from '../api/auth';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -57,7 +58,11 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="relative flex min-h-screen bg-slate-50 dark:bg-[#0b0f17] transition-colors duration-200">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Brand panel */}
       <aside className="gradient-brand relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 text-white lg:flex">
         <div className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10" />
@@ -80,17 +85,17 @@ export function RegisterPage() {
       </aside>
 
       {/* Form panel */}
-      <main className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
+      <main className="flex w-full items-center justify-center bg-white px-4 py-10 transition-colors duration-200 dark:bg-[#0b0f17] lg:w-1/2">
         <div className="w-full max-w-md">
           <div className="mb-8 flex items-center gap-2 lg:hidden">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl gradient-brand text-white">
               <Rocket className="h-5 w-5" />
             </span>
-            <span className="font-display text-lg font-bold text-slate-900">Placement Portal</span>
+            <span className="font-display text-lg font-bold text-slate-900 dark:text-white">Placement Portal</span>
           </div>
 
-          <h1 className="font-display text-3xl font-extrabold text-slate-900">Create an account</h1>
-          <p className="mt-1 text-sm text-slate-500">Sign up as a student or a company recruiter.</p>
+          <h1 className="font-display text-3xl font-extrabold text-slate-900 dark:text-white">Create an account</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign up as a student or a company recruiter.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
@@ -252,9 +257,9 @@ export function RegisterPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
             Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-700">
+            <Link to="/login" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
               Sign in
             </Link>
           </p>
